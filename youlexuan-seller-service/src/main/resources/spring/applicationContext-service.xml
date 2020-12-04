@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://code.alibabatech.com/schema/dubbo
+        http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+    <!-- 1.指定注册中心的信息 -->
+    <!-- 2.包扫描的路径,声明哪些实现类可以被远程调用 -->
+
+    <!-- 声明了使用dubbo协议并且使用20886端口,将当前工程翠微一个服务 -->
+    <dubbo:protocol name="dubbo" port="20886"></dubbo:protocol>
+    <!-- 当前服务的名称 -->
+    <dubbo:application name="youlexuan-seller-service" />
+    <!-- 注册中心的地址 -->
+    <dubbo:registry address="zookeeper://192.168.188.132:2181" />
+    <!-- 包扫描路径 ,扫描该包下的实现类 -->
+    <dubbo:annotation package="com.offcn.seller.service.impl" />
+</beans>

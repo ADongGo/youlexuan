@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+    <!--当前工程下那些资源需要拦截校验，那些不需要拦截校验-->
+    <!--1、不需要拦截校验的资源（在未登录的情况下，是可以访问的资源,匿名访问）-->
+    <http pattern="/css/**" security="none" />
+    <http pattern="/img/**" security="none" />
+    <http pattern="/js/**" security="none" />
+    <http pattern="/plugins/**" security="none" />
+
+    <http pattern="/shoplogin.html" security="none" />
+    <!--注册页面-->
+    <http pattern="/register.html" security="none" />
+    <!--注册-->
+    <http pattern="/seller/register.do" security="none" />
+    <!--测试-->
+    <http pattern="/fileUpload.do" security="none" />
+
+<!--=============================================================-->
+
+    <http use-expressions="false">
+        <!--除了第一部分之外，其他资源都需要拦截校验-->
+        <!--必须认证成功之后，还要拥有access对应的权限-->
+        <intercept-url pattern="/**" access="ROLE_SELLER" />
+        <form-login login-page="/shoplogin.html"
+                    default-target-url="/admin/index.html"
+                    always-use-default-target="true"
+                    authentication-failure-url="/shoplogin.html" />
+        <!--不可跨站，一种安全机制-->
+        <csrf disabled="true" />
+        <!--如果存在内嵌框架页面（index.html嵌入了brand.html），需要设置该参数-->
+        <headers>
+            <frame-options policy="SAMEORIGIN"></frame-options>
+        </headers>
+        <!--负责退出-->
+        <logout />
+    </http>
+
+<!--================================-->
+    <!--用户信息-->
+    <!--认证的时候，需要输入账号密码-->
+    <authentication-manager>
+        <authentication-provider user-service-ref="userService">
+            <!--登录校验时，使用哪种加密算法解密-->
+           <password-encoder ref="encoder"></password-encoder>
+            <!--<user-service>-->
+                <!--<user name="offcn" password="123" authorities="ROLE_ADMIN" />-->
+                <!--<user name="ujiuye" password="456" authorities="ROLE_ADMIN" />-->
+            <!--</user-service>-->
+        </authentication-provider>
+    </authentication-manager>
+
+    <beans:bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"></beans:bean>
+
+    <!--通userService从数据库中查询正确的账号密码以及权限-->
+    <beans:bean id="userService" class="com.offcn.shop.service.UserServcieImpl">
+        <!--在实现类中，注入了一个远程的SellerService类型的对象-->
+        <!--必须先启动商家服务成功之后，再来启动shop-web-->
+        <beans:property name="sellerService" ref="sellerService" />
+    </beans:bean>
+    <dubbo:application name="youlexuan-shop-web" />
+    <dubbo:registry address="zookeeper://192.168.188.132:2181"/>
+    <!--引入远程sellerService-->
+    <dubbo:reference interface="com.offcn.seller.service.SellerService" id="sellerService" />
+
+
+</beans:beans>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>商品管理</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/AdminLTE.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+	<script src="../plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="../plugins/bootstrap/js/bootstrap.min.js"></script>
+	<!--引入angularjs框架-->
+	<script src="../plugins/angularjs/angular.min.js"></script>
+	<!--引入分页控件-->
+	<link rel="stylesheet" href="../plugins/angularjs/pagination.css">
+	<script src="../plugins/angularjs/pagination.js"></script>
+	<!--引入app,controller,service-->
+	<script src="../js/app/base_pagination.js"></script>
+	<script src="../js/service/goodsService.js"></script>
+	<script src="../js/controller/baseController.js"></script>
+	<script src="../js/controller/goodsController.js"></script>
+
+
+</head>
+
+<body class="hold-transition skin-red sidebar-mini" ng-app="youlexuan" ng-controller="goodsController">
+  <!-- .box-body -->
+                
+                    <div class="box-header with-border">
+                        <h3 class="box-title">商品审核</h3>
+                    </div>
+
+                    <div class="box-body">
+
+                        <!-- 数据表格 -->
+                        <div class="table-box">
+
+                            <!--工具栏-->
+                            <div class="pull-left">
+                                <div class="form-group form-inline">
+                                    <div class="btn-group">
+                                        <button ng-click="deleteGoods()" type="button" class="btn btn-default" title="删除" ><i class="fa fa-trash-o"></i> 删除</button>
+                                        <button ng-click="updateGoodsStatus(1)" type="button" class="btn btn-default" title="审核通过" ><i class="fa fa-check"></i> 审核通过</button>
+                                        <button ng-click="updateGoodsStatus(2)" type="button" class="btn btn-default" title="驳回" ><i class="fa fa-ban"></i> 驳回</button>
+                                        <button type="button" class="btn btn-default" title="刷新" ><i class="fa fa-refresh"></i> 刷新</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="box-tools pull-right">
+                                <div class="has-feedback">
+                                    商品名称：<input ng-model="searchEntity.goodsName">
+									<button ng-click="reloadList()" class="btn btn-default" >查询</button>
+                                </div>
+                            </div>
+                            <!--工具栏/-->
+
+			                  <!--数据列表-->
+			                  <table id="dataList" class="table table-bordered table-striped table-hover dataTable">
+			                      <thead>
+			                          <tr>
+			                              <th class="" style="padding-right:0px">
+			                                  <input id="selall" type="checkbox" class="icheckbox_square-blue">
+			                              </th> 
+										  <th class="sorting_asc">商品ID</th>
+									      <th class="sorting">商品名称</th>
+									      <th class="sorting">商品价格</th>
+									      <th class="sorting">一级分类</th>
+									      <th class="sorting">二级分类</th>
+									      <th class="sorting">三级分类</th>
+									      <th class="sorting">状态</th>									     						
+					                      <th class="text-center">操作</th>
+			                          </tr>
+			                      </thead>
+			                      <tbody>
+			                          <tr ng-repeat="goods in list">
+			                              <td><input ng-click="updateSelectIds($event,goods.id)" type="checkbox"></td>
+				                          <td>{{goods.id}}</td>
+									      <td>{{goods.goodsName}}</td>
+									      <td>{{goods.price}}</td>
+									      <td>{{categoryName[goods.category1Id]}}</td>
+									      <td>{{categoryName[goods.category2Id]}}</td>
+									      <td>{{categoryName[goods.category3Id]}}</td>
+		                                  <td>		                                  
+		                                  	<span>
+		                                  		{{goodsStatus[goods.auditStatus]}}
+		                                  	</span>
+		                                  </td>		                                  
+		                                  <td class="text-center">
+											  <button ng-click="findGoods(goods)" type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#goodsModal" >详情</button>
+		                                  </td>
+			                          </tr>
+
+			                      </tbody>
+			                  </table>
+			                  <!--数据列表/-->                        
+							  <!--引入分页控件-->
+							 <tm-pagination conf="paginationConf"></tm-pagination>
+                        </div>
+                        <!-- 数据表格 /-->
+
+                     </div>
+                    <!-- /.box-body -->
+  <!-- 商品详情 -->
+  <div class="modal fade" id="goodsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" >
+		  <div class="modal-content">
+			  <div class="modal-header">
+				  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				  <h3 id="myModalLabel">商品详情</h3>
+			  </div>
+			  <div class="modal-body">
+
+				  <ul class="nav nav-tabs">
+					  <li class="active"><a href="#home" data-toggle="tab">基本信息</a></li>
+					  <li><a href="#linkman" data-toggle="tab">分类</a></li>
+					  <li><a href="#certificate" data-toggle="tab">其他信息</a></li>
+				  </ul>
+
+				  <!-- 选项卡开始 -->
+				  <div id="myTabContent" class="tab-content">
+					  <div class="tab-pane active in" id="home">
+						  <br>
+						  <table class="table table-bordered table-striped"  width="800px">
+							  <tr>
+								  <td>商品ID</td>
+								  <td>{{goods.id}}</td>
+							  </tr>
+							  <tr>
+								  <td>商品名称</td>
+								  <td>{{goods.goodsName}}</td>
+							  </tr>
+							  <tr>
+								  <td>商品价格</td>
+								  <td>{{goods.price}}</td>
+							  </tr>
+							  <tr>
+								  <td>商品状态</td>
+								  <td>{{goodsStatus[goods.auditStatus]}}</td>
+							  </tr>
+						  </table>
+					  </div>
+					  <div class="tab-pane fade" id="linkman">
+						  <br>
+						  <table class="table table-bordered table-striped" >
+							  <tr>
+								  <td>一级分类</td>
+								  <td>{{categoryName[goods.category1Id]}}</td>
+							  </tr>
+							  <tr>
+								  <td>二级分类</td>
+								  <td>{{categoryName[goods.category2Id]}}</td>
+							  </tr>
+							  <tr>
+								  <td>三级分类</td>
+								  <td>{{categoryName[goods.category3Id]}}</td>
+							  </tr>
+						  </table>
+					  </div>
+					  <div class="tab-pane fade" id="certificate">
+						  <br>
+						  <table class="table table-bordered table-striped" >
+							  <tr>
+								  <td>卖家ID</td>
+								  <td>{{goods.sellerId}}</td>
+							  </tr>
+							  <tr>
+								  <td>品牌</td>
+								  <td>{{goods.brandName}}</td>
+							  </tr>
+							  <tr>
+								  <td>说明</td>
+								  <td>{{goods.caption}}</td>
+							  </tr>
+						  </table>
+					  </div>
+				  </div>
+				  <!-- 选项卡结束 -->
+
+			  </div>
+			  <div class="modal-footer">
+				  <!--<button ng-click="updateSeller(entity.sellerId,1)" class="btn btn-success" data-dismiss="modal" aria-hidden="true">审核通过</button>
+				  <button ng-click="updateSeller(entity.sellerId,2)" class="btn btn-danger"  data-dismiss="modal" aria-hidden="true">审核未通过</button>-->
+				  <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+			  </div>
+		  </div>
+	  </div>
+  </div>
+</body>
+
+</html>
